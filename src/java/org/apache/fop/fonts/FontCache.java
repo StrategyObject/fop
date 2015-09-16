@@ -34,6 +34,8 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -332,8 +334,12 @@ public final class FontCache implements Serializable {
             } else {
                 // try and determine modified date
                 URI fontUri = resourceResolver.resolveFromBase(fontInfo.getEmbedURI());
-                File fontFile = new File(fontUri);
-                long lastModified = fontFile.lastModified();
+                long lastModified = 0;
+                try {
+                    lastModified = fontUri.toURL().openConnection().getLastModified();
+                } catch (IOException ex) {
+                    Logger.getLogger(FontCache.class.getName()).log(Level.WARNING, null, ex);
+                } 
                 cachedFontFile = new CachedFontFile(lastModified);
                 if (log.isTraceEnabled()) {
                     log.trace("Font added to cache: " + cacheKey);
